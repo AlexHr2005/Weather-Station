@@ -2,20 +2,20 @@
 #include <DHT_U.h>
 #include <SoftwareSerial.h>
 
+#define RX 3
+#define TX 4
 #define dht_PIN 2
 #define dht_TYPE DHT11
-#define BT_RX_PIN 0;
-#define BT_TX_PIN 1;
 
 int UVOUT = A1; //Output from the UV sensor
 char incoming_BT_Value = 0;
 
-
+SoftwareSerial BT(RX, TX);
 DHT dht(dht_PIN, dht_TYPE);
-SoftwareSerial bt(BT_RX_PIN, BT_TX_PIN);
 
 void setup() {
   Serial.begin(9600);
+  BT.begin(9600);
 
   dht.begin();
 }
@@ -39,19 +39,17 @@ void loop() {
   float heatIndex_F = dht.computeHeatIndex();
   float heatIndex_C  = dht.convertFtoC(heatIndex_F);
 
-  Serial.print("Temperature (C): ");
-  Serial.println(temperature_C);
-  Serial.print("Temperature (f): ");
-  Serial.println(temperature_F);
-  Serial.print("Heat index (C): ");
-  Serial.println(heatIndex_C);
-  Serial.print("Heat index (F): ");
-  Serial.println(heatIndex_F);
-  Serial.print("Humidity (%): ");
-  Serial.println(humidity);
-  Serial.println();
+  BT.print(temperature_C);
+  BT.print("|");
+  BT.print(temperature_F);
+  BT.print("|");
+  BT.print(humidity);
+  BT.print("|");
+  BT.print(heatIndex_C);
+  BT.print("|");
+  BT.print(heatIndex_F);
 
-  delay(4000);
+  delay(10000);
 
   /*
   float mq_135_value = analogRead(3);
