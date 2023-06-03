@@ -58,10 +58,10 @@ void loop() {
   BT.print(heatIndex_C);
   BT.print("|");
   BT.print(heatIndex_F);
-
-  Serial.println(pressure);
-  Serial.println(altitude);
-  Serial.println();
+  BT.print("|");
+  BT.print(pressure);
+  BT.print("|");
+  BT.print(altitude);
 
   delay(10000);
 
