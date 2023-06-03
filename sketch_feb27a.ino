@@ -1,6 +1,9 @@
 #include <DHT.h>
 #include <DHT_U.h>
 #include <SoftwareSerial.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
 
 #define RX 3
 #define TX 4
@@ -12,11 +15,15 @@ char incoming_BT_Value = 0;
 
 SoftwareSerial BT(RX, TX);
 DHT dht(dht_PIN, dht_TYPE);
+Adafruit_BMP280 bmp;
 
 void setup() {
   Serial.begin(9600);
   BT.begin(9600);
-
+  if (!bmp.begin(0x76)) {
+    Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+    while (1);
+  }
   dht.begin();
 }
 
@@ -39,6 +46,9 @@ void loop() {
   float heatIndex_F = dht.computeHeatIndex();
   float heatIndex_C  = dht.convertFtoC(heatIndex_F);
 
+  float pressure = bmp.readPressure() / 100; //to convert pressure from Pa in hPa
+  float altitude = bmp.readAltitude();
+
   BT.print(temperature_C);
   BT.print("|");
   BT.print(temperature_F);
@@ -48,6 +58,10 @@ void loop() {
   BT.print(heatIndex_C);
   BT.print("|");
   BT.print(heatIndex_F);
+
+  Serial.println(pressure);
+  Serial.println(altitude);
+  Serial.println();
 
   delay(10000);
 
