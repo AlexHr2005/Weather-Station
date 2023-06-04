@@ -10,8 +10,8 @@
 #define dht_PIN 2
 #define dht_TYPE DHT11
 
-int UVOUT = A1; //Output from the UV sensor
-char incoming_BT_Value = 0;
+uint8_t mqPin = A1;
+uint8_t uvPin = A2;
 
 SoftwareSerial BT(RX, TX);
 DHT dht(dht_PIN, dht_TYPE);
@@ -28,17 +28,6 @@ void setup() {
 }
 
 void loop() {
-  /*int UV_value = analogRead(UVOUT);
-  float UV_voltage = UV_value * (5.0 / 1023.0);
-  float UV_intensity = UV_voltage / 0.1; //this value is seen by the user
-  
-  Serial.print("UV intensity: ");
-  Serial.print(UV_intensity);
-  Serial.println(" mw/cm^2");
-  Serial.println(UV_voltage);
-
-  delay(300);*/
-  
   float humidity = dht.readHumidity();
 
   float temperature_C = dht.readTemperature();
@@ -48,6 +37,34 @@ void loop() {
 
   float pressure = bmp.readPressure() / 100; //to convert pressure from Pa in hPa
   float altitude = bmp.readAltitude();
+
+  int mqSensorValue = analogRead(mqPin);
+  String airQuality = "";
+  if(mqSensorValue < 190) {
+    airQuality = "Good";
+  }
+  else if(mqSensorValue < 300) {
+    airQuality = "Moderate";
+  }
+  else airQuality = "Bad";
+
+  int uvSensorValue = analogRead(uvPin);
+  float voltage = uvSensorValue * (5.0 / 1013.0);
+  float uvIntensity = mapValue(voltage, 0.99, 2.9, 0.0, 15.0);
+  String UVrisk = "";
+  if(uvIntensity <= 2) {
+    UVrisk = "Low";
+  }
+  else if(uvIntensity <= 5) {
+    UVrisk = "Moderate";
+  }
+  else if(uvIntensity <= 7) {
+    UVrisk = "High";
+  }
+  else if(uvIntensity <= 10) {
+    UVrisk = "Very High";
+  }
+  else UVrisk = "Extreme";
 
   BT.print(temperature_C);
   BT.print("|");
@@ -62,15 +79,14 @@ void loop() {
   BT.print(pressure);
   BT.print("|");
   BT.print(altitude);
+  BT.print("|");
+  BT.print(airQuality);
+  BT.print("|");
+  BT.print(UVrisk);
 
-  delay(10000);
+  delay(60000);
+}
 
-  /*
-  float mq_135_value = analogRead(3);
-  float digital_val = digitalRead(7);
-  Serial.println(mq_135_value, DEC);
-  Serial.println(digital_val, DEC);
-  */
-
-  
+float mapValue(float value, float inMin, float inMax, float outMin, float outMax) {
+  return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
